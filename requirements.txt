@@ -1,0 +1,10 @@
+# Runtime dependencies are OPTIONAL by design.
+#
+# With PROVIDER=offline (the default) this project runs on the Python standard
+# library alone: no install step, no network, every test passes. That is what
+# lets a reviewer clone and verify the system without obtaining a key.
+#
+# These are needed only to talk to a live model:
+openai>=1.40,<3
+httpx>=0.27
+python-dotenv>=1.0

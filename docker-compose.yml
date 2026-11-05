@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    image: northwind-support-agents:local
+    env_file:
+      - .env
+    environment:
+      # Secrets come from the environment only. Nothing here is baked into the
+      # image, and .env is git-ignored.
+      PROVIDER: ${PROVIDER:-offline}
+      DATA_DIR: /app/data
+      LOG_DIR: /app/logs
+    volumes:
+      # Approval records and the audit log must survive a container replacement.
+      - agent-data:/app/data
+      - agent-logs:/app/logs
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stdin_open: true
+    tty: true
+
+volumes:
+  agent-data:
+  agent-logs:

@@ -1,0 +1,53 @@
+flowchart TB
+    C([Customer])
+    AUTH["Transport layer<br/>builds RequestContext<br/><b>customer_id from the session</b>"]
+    IG{{"Input guardrail<br/>newest message only"}}
+    BLK[Refused + logged]
+
+    ORCH["<b>Orchestrator</b><br/>no tools"]
+
+    ORD["<b>Order</b><br/>status · cancel · address"]
+    RET["<b>Returns</b><br/>returns · refunds"]
+    WAR["<b>Warranty</b><br/>claims · replacements"]
+    KB["<b>Knowledge</b><br/>policy · read-only"]
+
+    TL{{"Tool layer<br/>ownership · business rules · value threshold"}}
+    EXEC[("Execute")]
+    APR["<b>Approval workflow</b><br/>durable record · out of band"]
+    HUM(["Human approver<br/>separate system"])
+
+    OG{{"Output guardrail<br/>no secrets · no enumeration · no promises"}}
+
+    SESS[("Session memory<br/>transcript")]
+    WM[("Working memory<br/>bounded · structured")]
+    AUD[("Audit log<br/>append-only")]
+    TR[("Traces<br/>OTel GenAI")]
+
+    C --> AUTH --> IG
+    IG -->|block| BLK
+    IG -->|pass| ORCH
+
+    ORCH -->|route| ORD
+    ORCH -->|route| RET
+    ORCH -->|route| WAR
+    ORCH -->|route| KB
+
+    ORD & RET & WAR & KB --> TL
+    TL -->|low risk| EXEC
+    TL -->|"at or above threshold"| APR
+    APR -.->|card| HUM
+    HUM -.->|"signed, param-bound,<br/>single-use token"| TL
+
+    TL --> AUD
+    EXEC --> OG
+    ORD & RET & WAR & KB --> OG
+    OG --> C
+
+    ORCH <--> SESS
+    ORCH <--> WM
+    ORCH -.-> TR
+
+    classDef control fill:#5f1e1e,stroke:#b35,color:#fff
+    classDef store fill:#1e3a5f,stroke:#47f,color:#fff
+    class TL,APR control
+    class SESS,WM,AUD,TR store
